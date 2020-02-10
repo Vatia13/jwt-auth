@@ -21,7 +21,8 @@ class AuthHeaders implements ParserContract
      *
      * @var string
      */
-    protected $header = 'authorization';
+    // protected $header = 'authorization';
+    protected $header = 'author';
 
     /**
      * The header prefix.
@@ -43,7 +44,7 @@ class AuthHeaders implements ParserContract
     }
 
     /**
-     * Try to parse the token from the request header.
+     * Try to parse the token from the request header or body content.
      *
      * @param  \Illuminate\Http\Request  $request
      *
@@ -55,6 +56,17 @@ class AuthHeaders implements ParserContract
 
         if ($header && preg_match('/'.$this->prefix.'\s*(\S+)\b/i', $header, $matches)) {
             return $matches[1];
+        }
+
+        // check if token is in the request body
+        $body = json_decode($request->getContent(), true);
+        if(isset($body['token'])) {
+            $tokenArr = explode(' ', $body['token']);
+            if (count($tokenArr) > 1) {
+                if ($response = $tokenArr[1]) {
+                    return $response;
+                }
+            }
         }
     }
 
